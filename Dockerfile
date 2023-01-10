@@ -3,7 +3,13 @@ MAINTAINER Ridwan Shariffdeen <ridwan@comp.nus.edu.sg>
 ARG DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
-RUN apt-get update && apt-get upgrade -y && apt-get autoremove -y
+RUN apt-get update -qq \
+ && apt-get upgrade -y \
+ && apt-get autoremove -y \
+ && apt-get install -y --no-install-recommends  \
+      apt-transport-https \
+      build-essential
+
 RUN apt-get install -y --no-install-recommends  \
        ant \
        git \
