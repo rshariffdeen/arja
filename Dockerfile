@@ -62,3 +62,4 @@ RUN mvn clean package
 WORKDIR /opt/arja/external
 RUN rm -r bin; mkdir bin; javac -cp lib/*: -d bin $(find src -name '*.java')
 WORKDIR /opt/arja
+RUN rm -r bin; mkdir bin; javac -cp lib/*: -d bin $(find src -name '*.java')
