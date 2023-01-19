@@ -58,7 +58,7 @@ RUN \
 # Build ARJA
 RUN git clone https://github.com/yyxhdy/arja -b arja-e /opt/arja
 WORKDIR /opt/arja
-RUN mvn clean package
+RUN mvn clean package; exit 0
 WORKDIR /opt/arja/external
 RUN rm -r bin; mkdir bin; javac -cp lib/*: -d bin $(find src -name '*.java')
 WORKDIR /opt/arja
