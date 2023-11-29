@@ -20,6 +20,10 @@ public class Interpreter {
 		
 		String srcJavaDir = parameterStrs.get("srcJavaDir");
 		parameters.put("srcJavaDir", srcJavaDir);
+
+		String srcVersion = parameterStrs.get("srcVersion");
+		parameters.put("srcVersion", srcVersion);
+
 			
 		String dependencesS = parameterStrs.get("dependences");	
 		if (dependencesS != null) {

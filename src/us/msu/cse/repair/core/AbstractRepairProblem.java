@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -108,7 +108,7 @@ public abstract class AbstractRepairProblem extends Problem {
 	protected String finalTestsInfoPath;
 
 	protected String srcJavaDir;
-
+    protected String srcVersion;
 	protected String binJavaDir;
 	protected String binTestDir;
 	protected String binInsTestDir;
@@ -162,14 +162,23 @@ public abstract class AbstractRepairProblem extends Problem {
 	protected static int numberOfTimeouts;
 	protected final int maxAllowedWaitTime = 30000;
 	
+     private final static List<String> srcVersions = Arrays.asList(
+			JavaCore.VERSION_1_1, JavaCore.VERSION_1_2, JavaCore.VERSION_1_3,
+			JavaCore.VERSION_1_4, JavaCore.VERSION_1_5, JavaCore.VERSION_1_6,
+			JavaCore.VERSION_1_7, JavaCore.VERSION_1_8, JavaCore.VERSION_CLDC_1_1,
+            JavaCore.VERSION_9, JavaCore.VERSION_10, JavaCore.VERSION_11
+	);
 
 	@SuppressWarnings("unchecked")
 	public AbstractRepairProblem(Map<String, Object> parameters) throws Exception {
 		binJavaDir = (String) parameters.get("binJavaDir");
 		binTestDir = (String) parameters.get("binTestDir");
 		srcJavaDir = (String) parameters.get("srcJavaDir");
-		dependences = (Set<String>) parameters.get("dependences");
 
+		dependences = (Set<String>) parameters.get("dependences");
+        srcVersion = (String) parameters.get("srcVersion");
+		if (srcVersion == null)
+			srcVersion = JavaCore.VERSION_1_8;
 		percentage = (Double) parameters.get("percentage");
 
 		javaClassesInfoPath = (String) parameters.get("javaClassesInfoPath");
@@ -291,6 +300,8 @@ public abstract class AbstractRepairProblem extends Problem {
 			throw new Exception("The JVM path does not exist!");
 		else if (!(new File(externalProjRoot).exists()))
 			throw new Exception("The directory of external project does not exist!");
+        else if (!srcVersions.contains(srcVersion))
+			throw new Exception("The source version does not exist!");
 	}
 
 	protected void invokeModules() throws Exception {
@@ -410,7 +421,7 @@ public abstract class AbstractRepairProblem extends Problem {
 		parser.setBindingsRecovery(true);
 
 		Map options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_1_7, options);
+		JavaCore.setComplianceOptions(srcVersion, options);
 		parser.setCompilerOptions(options);
 
 		File srcFile = new File(srcJavaDir);
