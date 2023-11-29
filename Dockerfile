@@ -56,7 +56,7 @@ RUN \
 
 
 # Build ARJA
-RUN git clone https://github.com/yyxhdy/arja -b arja-e /opt/arja
+RUN git clone https://github.com/rshariffdeen/arja -b arja-e /opt/arja
 WORKDIR /opt/arja
 RUN mvn clean package; exit 0
 WORKDIR /opt/arja/external
