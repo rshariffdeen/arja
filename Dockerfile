@@ -35,8 +35,12 @@ ENV M2_HOME '/opt/apache-maven-3.6.3'
 ENV PATH "$M2_HOME/bin:${PATH}"
 
 # Instead of openjdk-8-jdk, install zulu jdk 8.0 to accomodate Defects4J version 1.5.0 and older
-RUN wget -O /tmp/zulu8.deb https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-linux_amd64.deb
-RUN apt install -y /tmp/zulu8.deb
+#RUN wget -O /tmp/zulu8.deb https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-linux_amd64.deb
+#RUN apt install -y /tmp/zulu8.deb
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends  \
+  openjdk-17-jdk \
+  openjdk-17-jdk-headless
+
 
 # Build Defects4J (adapted from https://github.com/rjust/defects4j/blob/master/Dockerfile)
 # JDK already set up above, so dont install JDK here
