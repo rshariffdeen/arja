@@ -565,7 +565,7 @@ public abstract class AbstractRepairProblem extends Problem {
 		compilerOptions = new ArrayList<String>();
 		compilerOptions.add("-nowarn");
 		compilerOptions.add("-source");
-		compilerOptions.add("1.7");
+		compilerOptions.add(this.srcVersion);
 		compilerOptions.add("-cp");
 		String cpStr = binJavaDir;
 
