@@ -186,7 +186,7 @@ public class PareProblem extends ArjaProblem {
 	protected void invokeTemplateExecutor() throws MalformedTreeException, BadLocationException {
 		System.out.println("Execution of repair templates starts...");
 		TemplateExecutor executor = new TemplateExecutor(modificationPoints, sourceContents, declaredClasses,
-				methodDeclarations);
+				methodDeclarations, apiLevel);
 		executor.execute();
 		System.out.println("Execution of repair templates is finished!");
 	}

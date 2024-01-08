@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 
@@ -24,8 +25,17 @@ public class GZoltarFaultLocalizer3 implements IFaultLocalizer {
             String externalProjRoot, String gzoltarDataDir) throws IOException {
 
         ProcessBuilder pb = new ProcessBuilder();
-        pb.command("bash", Paths.get(externalProjRoot, "localization", "localize.sh").normalize().toString(),
-                binJavaDir, binTestDir, String.join(File.pathSeparator, dependencies), gzoltarDataDir);
+
+        Set<String> absoluteDeps = new TreeSet<>();
+        for (String dep : dependencies) {
+            absoluteDeps.add(Paths.get(dep).toAbsolutePath().toString());
+        }
+
+        pb.command("bash", Paths.get(externalProjRoot, "localization", "localize.sh").toAbsolutePath().toString(),
+                Paths.get(binJavaDir).toAbsolutePath().toString(), Paths.get(binTestDir).toAbsolutePath().toString(),
+                String.join(File.pathSeparator, absoluteDeps), Paths.get(gzoltarDataDir).toAbsolutePath().toString());
+
+        pb.directory(Paths.get(externalProjRoot, "lib").toFile());
 
         Process p = pb.start();
         try {

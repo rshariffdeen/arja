@@ -838,7 +838,7 @@ public class Helper {
     
    
        
-    public static IfStatement getIfThrowStatement(Expression exp, String exceptionQualifiedName) {
+    public static IfStatement getIfThrowStatement(Expression exp, String exceptionQualifiedName, int apiLevel) {
     	IfStatement ifStatement = exp.getAST().newIfStatement();
     	
     	Expression expCopy = (Expression) ASTNode.copySubtree(exp.getAST(), exp);
@@ -849,7 +849,7 @@ public class Helper {
     	
     	ClassInstanceCreation ccc = exp.getAST().newClassInstanceCreation();
     	
-    	ASTParser parser = ASTParser.newParser(AST.JLS8);
+    	ASTParser parser = ASTParser.newParser(apiLevel);
     	
     	parser.setSource(exceptionQualifiedName.toCharArray());
     	parser.setKind(ASTParser.K_EXPRESSION);
@@ -878,12 +878,12 @@ public class Helper {
     	return ifs;
     }
     
-    public static ThrowStatement getThrowStatement(AST ast, String exceptionQualifiedName) {
+    public static ThrowStatement getThrowStatement(AST ast, String exceptionQualifiedName, int apiLevel) {
     	ThrowStatement ths = ast.newThrowStatement();
     	
     	ClassInstanceCreation ccc = ast.newClassInstanceCreation();
     	
-    	ASTParser parser = ASTParser.newParser(AST.JLS8);
+    	ASTParser parser = ASTParser.newParser(apiLevel);
     	parser.setSource(exceptionQualifiedName.toCharArray());
     	parser.setKind(ASTParser.K_EXPRESSION);
     	QualifiedName qn = (QualifiedName) parser.createAST(null);
@@ -898,7 +898,7 @@ public class Helper {
     }
     
     
-    public static List<Statement> getThrowStatementsFromImportThrow(CompilationUnit cu) {
+    public static List<Statement> getThrowStatementsFromImportThrow(CompilationUnit cu, int apiLevel) {
     	List<Statement> throwStatements = new ArrayList<Statement>();
     	for (Object o : cu.imports()) {
     		ImportDeclaration imd = (ImportDeclaration) o;
@@ -909,7 +909,7 @@ public class Helper {
     		ITypeBinding tb = (ITypeBinding) bd;
     		
     		if (isException(tb)) {
-    			ThrowStatement ths = getThrowStatement(cu.getAST(), tb.getQualifiedName());
+    			ThrowStatement ths = getThrowStatement(cu.getAST(), tb.getQualifiedName(), apiLevel);
     			throwStatements.add(ths);
     		}
     		
@@ -917,14 +917,14 @@ public class Helper {
     	return throwStatements;
     }
     
-	public static List<Statement> getThrowStatementsFromMethodThrow(MethodDeclaration md) {
+	public static List<Statement> getThrowStatementsFromMethodThrow(MethodDeclaration md, int apiLevel) {
 		List<Statement> throwStatements = new ArrayList<Statement>();
 		for (Object obj : md.thrownExceptionTypes()) {
 			Type type = (Type) obj;
 			ITypeBinding tb = type.resolveBinding();
 			if (tb != null) {
 				String expName = tb.getQualifiedName();
-				ThrowStatement ths = getThrowStatement(md.getAST(), expName);
+				ThrowStatement ths = getThrowStatement(md.getAST(), expName, apiLevel);
 				throwStatements.add(ths);
 			}
 		}
@@ -1134,11 +1134,11 @@ public class Helper {
 		return newList;
 	}
 	
-	public static void blocklizeSource(String path) throws IOException {
+	public static void blocklizeSource(String path, int apiLevel) throws IOException {
 		File file = new File(path);
 		String content = FileUtils.readFileToString(file, "UTF-8");
 
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(apiLevel);
 		parser.setSource(content.toCharArray());
 
 		CompilationUnit unit = (CompilationUnit) parser.createAST(null);

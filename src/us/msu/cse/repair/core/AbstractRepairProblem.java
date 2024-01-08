@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -108,7 +109,9 @@ public abstract class AbstractRepairProblem extends Problem {
 	protected String finalTestsInfoPath;
 
 	protected String srcJavaDir;
-    protected String srcVersion;
+
+	protected String srcVersion;
+
 	protected String binJavaDir;
 	protected String binTestDir;
 	protected String binInsTestDir;
@@ -162,23 +165,58 @@ public abstract class AbstractRepairProblem extends Problem {
 	protected static int numberOfTimeouts;
 	protected final int maxAllowedWaitTime = 30000;
 	
-     private final static List<String> srcVersions = Arrays.asList(
+
+	private final static List<String> srcVersions = Arrays.asList(
 			JavaCore.VERSION_1_1, JavaCore.VERSION_1_2, JavaCore.VERSION_1_3,
 			JavaCore.VERSION_1_4, JavaCore.VERSION_1_5, JavaCore.VERSION_1_6,
 			JavaCore.VERSION_1_7, JavaCore.VERSION_1_8, JavaCore.VERSION_CLDC_1_1,
             JavaCore.VERSION_9, JavaCore.VERSION_10, JavaCore.VERSION_11
 	);
 
+    protected int apiLevel;
+
 	@SuppressWarnings("unchecked")
 	public AbstractRepairProblem(Map<String, Object> parameters) throws Exception {
 		binJavaDir = (String) parameters.get("binJavaDir");
 		binTestDir = (String) parameters.get("binTestDir");
 		srcJavaDir = (String) parameters.get("srcJavaDir");
-
 		dependences = (Set<String>) parameters.get("dependences");
-        srcVersion = (String) parameters.get("srcVersion");
+
+		srcVersion = (String) parameters.get("srcVersion");
 		if (srcVersion == null)
 			srcVersion = JavaCore.VERSION_1_8;
+
+        switch (srcVersion) {
+            case JavaCore.VERSION_1_1:
+            case JavaCore.VERSION_1_2:
+            case JavaCore.VERSION_CLDC_1_1:
+                apiLevel = AST.JLS2;
+                break;
+            case JavaCore.VERSION_1_3:
+                apiLevel = AST.JLS3;
+                break;
+            case JavaCore.VERSION_1_4:
+            case JavaCore.VERSION_1_5:
+            case JavaCore.VERSION_1_6:
+            case JavaCore.VERSION_1_7:
+                apiLevel = AST.JLS4;
+                break;
+            case JavaCore.VERSION_1_8:
+                apiLevel = AST.JLS8;
+                break;
+            case JavaCore.VERSION_9:
+                apiLevel = AST.JLS9;
+                break;
+            case JavaCore.VERSION_10:
+                apiLevel = AST.JLS10;
+                break;
+            case JavaCore.VERSION_11:
+                apiLevel = AST.JLS11;
+                break;
+            default:
+                throw new RuntimeException("Unsupported source version " + srcVersion);
+        }
+
 		percentage = (Double) parameters.get("percentage");
 
 		javaClassesInfoPath = (String) parameters.get("javaClassesInfoPath");
@@ -300,7 +338,7 @@ public abstract class AbstractRepairProblem extends Problem {
 			throw new Exception("The JVM path does not exist!");
 		else if (!(new File(externalProjRoot).exists()))
 			throw new Exception("The directory of external project does not exist!");
-        else if (!srcVersions.contains(srcVersion))
+		else if (!srcVersions.contains(srcVersion))
 			throw new Exception("The source version does not exist!");
 	}
 
@@ -347,7 +385,7 @@ public abstract class AbstractRepairProblem extends Problem {
 			sourceFilePaths[i++] = file.getCanonicalPath();
 		
 		for (String path : sourceFilePaths) 
-			Helper.blocklizeSource(path);
+			Helper.blocklizeSource(path, apiLevel);
 		
 		System.out.println("Blocklizer is finished!");
 	}
@@ -370,8 +408,11 @@ public abstract class AbstractRepairProblem extends Problem {
 		if (gzoltarDataDir == null)
 			faultLocalizer = new GZoltarFaultLocalizer(binJavaClasses, binExecuteTestClasses, binJavaDir, binTestDir,
 					dependences);
-		else 
+        else if (new File(gzoltarDataDir).exists()) {
 			faultLocalizer = new GZoltarFaultLocalizer2(gzoltarDataDir);
+        } else {
+			faultLocalizer = new GZoltarFaultLocalizer3(binJavaDir, binTestDir, dependences, externalProjRoot,  gzoltarDataDir);
+        }
 		
 		faultyLines = faultLocalizer.searchSuspicious(thr);
 		
@@ -411,7 +452,7 @@ public abstract class AbstractRepairProblem extends Problem {
 		FileASTRequestorImpl requestor = new FileASTRequestorImpl(faultyLines, seedLines,
 				modificationPoints, seedStatements, sourceASTs, sourceContents, declaredClasses, methodDeclarations);
 
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(apiLevel);
 		String[] classpathEntries = null;
 		if (dependences != null)
 			classpathEntries = dependences.toArray(new String[dependences.size()]);

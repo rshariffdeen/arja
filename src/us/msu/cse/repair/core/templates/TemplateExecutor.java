@@ -65,14 +65,16 @@ public class TemplateExecutor {
     List<ExtendedModificationPoint> modificationPoints;
     
     Map<IMethodBinding, MethodDeclaration> methodDeclarations;
+    int apiLevel;
     
 	public TemplateExecutor(List<ExtendedModificationPoint> modificationPoints, Map<String, String> sourceContents,
 			Map<String, ITypeBinding> declaredClasses,
-			Map<IMethodBinding, MethodDeclaration> methodDeclarations) throws MalformedTreeException, BadLocationException {
+			Map<IMethodBinding, MethodDeclaration> methodDeclarations, int apiLevel) throws MalformedTreeException, BadLocationException {
 		this.sourceContents = sourceContents;
 		this.declaredClasses = declaredClasses;
 		this.modificationPoints = modificationPoints;
 		this.methodDeclarations = methodDeclarations;
+        this.apiLevel = apiLevel;
 	}
 	
 	public void execute() throws MalformedTreeException, BadLocationException {
@@ -521,13 +523,13 @@ public class TemplateExecutor {
 		}
 		
 		CompilationUnit cu = (CompilationUnit) statement.getRoot();
-		List<Statement> throwStsFromMethod = Helper.getThrowStatementsFromMethodThrow(md);
-		List<Statement> throwStsFromImport = Helper.getThrowStatementsFromImportThrow(cu);
+		List<Statement> throwStsFromMethod = Helper.getThrowStatementsFromMethodThrow(md, apiLevel);
+		List<Statement> throwStsFromImport = Helper.getThrowStatementsFromImportThrow(cu, apiLevel);
 		thenStatements.addAll(throwStsFromMethod);
 		thenStatements.addAll(throwStsFromImport);
 		
 		if (isInParams) {
-			ThrowStatement argThr = Helper.getThrowStatement(statement.getAST(), "java.lang.IllegalArgumentException");
+			ThrowStatement argThr = Helper.getThrowStatement(statement.getAST(), "java.lang.IllegalArgumentException", apiLevel);
 			thenStatements.add(argThr);
 		}
 		
@@ -707,7 +709,7 @@ public class TemplateExecutor {
 		
 		String repStr = doc.get().substring(start, start + len);
 		
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(apiLevel);
 		parser.setSource(repStr.toCharArray());
 		parser.setKind(ASTParser.K_STATEMENTS);
 		Block block = (Block) parser.createAST(null);
@@ -759,7 +761,7 @@ public class TemplateExecutor {
 			if (!tb.isClass() || (ref instanceof MethodInvocation))
 				continue;
 
-			ASTParser parser = ASTParser.newParser(AST.JLS8);
+			ASTParser parser = ASTParser.newParser(apiLevel);
 	    	String stStr = (refStr + "= new " + tb.getName() + "();");
 	    	parser.setSource(stStr.toCharArray());
 	    	parser.setKind(ASTParser.K_STATEMENTS);
