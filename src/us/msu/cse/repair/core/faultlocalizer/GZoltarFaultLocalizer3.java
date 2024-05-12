@@ -25,7 +25,8 @@ public class GZoltarFaultLocalizer3 implements IFaultLocalizer {
             String externalProjRoot, String gzoltarDataDir) throws IOException {
 
         ProcessBuilder pb = new ProcessBuilder();
-
+        // redirectIO to prevent full buffer
+        pb.inheritIO();
         Set<String> absoluteDeps = new TreeSet<>();
         for (String dep : dependencies) {
             absoluteDeps.add(Paths.get(dep).toAbsolutePath().toString());
